@@ -1,6 +1,8 @@
 package home.analytics;
 
+import home.analytics.utils.SysUtils;
 import home.analytics.window.runnable.Cli;
+import home.analytics.window.runnable.remote.Server;
 import home.analytics.window.runnable.WindowUsage;
 
 import java.util.ArrayList;
@@ -19,11 +21,16 @@ public class Habits {
 
     public static void start() {
         loadRunners();
+        loadServerListener();
         loadCliTask();
     }
 
     public static void stop() {
         execs.forEach(ExecutorService::shutdown);
+        SysUtils.thHolder.values().forEach(t -> {
+            if (!t.isInterrupted())
+                t.interrupt();
+        });
     }
 
     private static void loadRunners() {
@@ -43,5 +50,10 @@ public class Habits {
     private static void loadCliTask() {
         final Thread th = new Thread(new Cli());
         th.start();
+    }
+
+    private static void loadServerListener() {
+        final Thread thS = new Thread(new Server());
+        thS.start();
     }
 }

@@ -3,6 +3,7 @@ package home.analytics.window.runnable;
 import home.analytics.Habits;
 import home.analytics.utils.SysUtils;
 import home.analytics.window.BehaviourCollector;
+import home.analytics.window.runnable.remote.Client;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -24,6 +25,7 @@ public class Cli implements Runnable {
     private static final long HOUR_MS = 3600000;
 
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH-mm_dd.MM.yyyy");
+    private static final String IPV4_REGEX = "^(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})$";
 
     public Cli() {
         SysUtils.thHolder.put(KEY, Thread.currentThread());
@@ -46,7 +48,8 @@ public class Cli implements Runnable {
         }
 
         System.out.println("Habits closing..");
-        SysUtils.sleep(5000);
+        SysUtils.sleep(3000);
+        System.exit(0);
     }
 
     private boolean isExit(final String inp) {
@@ -60,14 +63,25 @@ public class Cli implements Runnable {
 
     private String cmdFactory(String inp) {
         inp = inp.toLowerCase(Locale.ROOT);
-        if (!Commands.exists(inp)) {
-            return "no such command";
-        }
+        if (inp.trim().startsWith("remote")) {
+            String[] cmdArr = inp.split(" ");
+            if (cmdArr.length < 3)
+                return "wrong number of args. Example: remote 128.0.0.1 r";
 
-        return Commands.valueOf(inp).getCmdExtractor().get();
+            final String ip = cmdArr[1].trim();
+            if (!ip.matches(IPV4_REGEX))
+                return "wrong IP: " + ip;
+
+            final Thread rTh = new Thread(new Client(ip, cmdArr[2].trim()));
+            rTh.start();
+            return "please wait..";
+        } else if (Commands.exists(inp)) {
+            return Commands.valueOf(inp).getCmdExtractor().get();
+        } else
+            return "no such command";
     }
 
-    private enum Commands {
+    public enum Commands {
         exit(()-> ""),
         stat(Commands::getStat),
         txt(Commands::saveStatToFile);
@@ -91,7 +105,7 @@ public class Cli implements Runnable {
             return cmdExtractor;
         }
 
-        private static String getStat() {
+        public static synchronized String getStat() {
             final Map<String, Long> wuc = new HashMap<>(BC.getWUC());
             final int[] maxLn = {0};
             wuc.keySet().forEach(s-> {

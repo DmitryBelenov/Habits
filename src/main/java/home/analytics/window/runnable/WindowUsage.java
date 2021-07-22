@@ -26,8 +26,8 @@ public class WindowUsage implements Runnable, SysRunner {
     @Override
     public void run() {
         if (isAlive()) {
-            final String curWin = JNAWinState.getForegroundName();
-            BC.addToWUC(curWin, checkInterval);
+            final String curWinName = JNAWinState.getForegroundName();
+            BC.addToWUC(curWinName, checkInterval);
         }
     }
 
