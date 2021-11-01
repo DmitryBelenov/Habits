@@ -46,7 +46,6 @@ public class Server implements Runnable, SysRunner {
             System.out.println("Server is closing..\n" + e.getMessage());
             // dummy
         }
-        stop();
     }
 
     private void stop() {

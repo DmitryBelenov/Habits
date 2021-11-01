@@ -21,17 +21,20 @@ public class SysUtils {
 
     public static String getFormatted(final Map<String, Long> wuc, final int maxLn) {
         StringBuilder sb = new StringBuilder("Windows usage:\n");
-        Stream<Map.Entry<String,Long>> sorted = wuc.entrySet().stream().sorted(Map.Entry.comparingByValue());
+        Stream<Map.Entry<String, Long>> sorted = wuc.entrySet().stream().sorted(Map.Entry.comparingByValue());
         sorted.forEach(me -> {
-            final int ln = me.getKey().length();
-            final String k = me.getKey();
-            final String cnvMs = convertMS(me.getValue());
-            StringBuilder addLine = new StringBuilder(" ");
-            for (int i = 0; i < (maxLn - ln) + 4; i++) {
-                addLine.append(".");
+            String k = me.getKey();
+            if (!k.isEmpty()) {
+                final int ln = k.length();
+                final String cnvMs = convertMS(me.getValue());
+                StringBuilder addLine = new StringBuilder(" ");
+                for (int i = 0; i < (maxLn - ln) + 4; i++) {
+                    addLine.append(".");
+                }
+                addLine.append(" ");
+
+                sb.append(k).append(addLine.toString()).append(cnvMs).append("\n");
             }
-            addLine.append(" ");
-            sb.append(k).append(addLine.toString()).append(cnvMs).append("\n");
         });
         return sb.toString();
     }

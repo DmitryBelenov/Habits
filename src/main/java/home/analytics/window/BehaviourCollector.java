@@ -10,6 +10,8 @@ public class BehaviourCollector {
 
     private static Map<String, Long> windowUsageCollector;
 
+    private static final int MAX_KEY_LENGTH = 120;
+
     private final static Lock rLock = new ReentrantReadWriteLock().readLock();
     private final static Lock wLock = new ReentrantReadWriteLock().writeLock();
 
@@ -46,9 +48,13 @@ public class BehaviourCollector {
         }
     }
 
-    public void addToWUC(final String name, final Long timeMS) {
+    public void addToWUC(String name, final Long timeMS) {
         wLock.lock();
         try {
+            if (name.length() > MAX_KEY_LENGTH) {
+                name = name.substring(0, MAX_KEY_LENGTH + 1);
+            }
+
             windowUsageCollector.merge(name, timeMS, Long::sum);
         } finally {
             wLock.unlock();
